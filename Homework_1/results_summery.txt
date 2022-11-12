@@ -1,4 +1,3 @@
-@@@
 ########################################################################
 #      Date:           Sat 12 Nov 2022 04:41:34 AM PST
 #    Job ID:           2039055.v-qsvr-1.aidevcloud
@@ -19,147 +18,54 @@ Area of Mandlebrot set =   1.50763320 +/-   0.00030153
 # End of output for job 2039055.v-qsvr-1.aidevcloud
 # Date: Sat 12 Nov 2022 04:43:50 AM PST
 ########################################################################
-@@@
-########################################################################
-#      Date:           Sat 12 Nov 2022 06:38:56 AM PST
-#    Job ID:           2039124.v-qsvr-1.aidevcloud
-#      User:           u176694
-# Resources:           neednodes=1:batch:ppn=2,nodes=1:batch:ppn=2,walltime=06:00:00
-########################################################################
 
-## u176694 is running HW1 Problem 1 - Calculate Mandelbrot area - parallel critical
-########## Compiling your parallel critical code
-########## Executing your parallel critical code
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
 
-time: 0.152473 seconds, with 1 threads
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
 
-time: 0.125662 seconds, with 2 threads
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
+critical, points=500, depth=500
+0.152473
+0.125662
+0.082194
+0.089109
+0.086509
+0.402451
 
-time: 0.082194 seconds, with 4 threads
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
+atomic, points=3000, depth=1000
+9.032136
+7.693729
+4.122802
+2.549137
+1.410493
+1.022161
 
-time: 0.089109 seconds, with 8 threads
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
+false_sharing, points=3000, depth=1000
+8.905875
+4.477742
+2.260810
+1.149872
+0.628068
+0.441075
 
-time: 0.086509 seconds, with 16 threads
-Area of Mandlebrot set =   1.51708500 +/-   0.00303417
+padding, points=3000, depth=1000
+9.020579
+4.518221
+2.267503
+1.156635
+0.625293
+0.423927
 
-time: 0.402451 seconds, with 24 threads
-(Correct answer should be around 1.506)
-########## Done parallel critical
+reduction, points=3000, depth=1000
+8.986111
+7.642874
+4.086676
+2.515460
+1.418774
+1.078743
 
-########################################################################
-# End of output for job 2039124.v-qsvr-1.aidevcloud
-# Date: Sat 12 Nov 2022 06:39:02 AM PST
-########################################################################
-@@@
-########################################################################
-#      Date:           Sat 12 Nov 2022 07:01:32 AM PST
-#    Job ID:           2039138.v-qsvr-1.aidevcloud
-#      User:           u176694
-# Resources:           neednodes=1:batch:ppn=2,nodes=1:batch:ppn=2,walltime=06:00:00
-########################################################################
-
-## u176694 is running HW1 Problem 1 - Calculate Mandelbrot area - parallel false_sharing
-########## Compiling your parallel false_sharing code
-########## Executing your parallel false_sharing code
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.017663 seconds, with 1 threads
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.000964 seconds, with 2 threads
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.000954 seconds, with 4 threads
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.000982 seconds, with 8 threads
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.000992 seconds, with 16 threads
-Area of Mandlebrot set =   1.51211812 +/-   0.00151212
-
-time: 1.001060 seconds, with 24 threads
-(Correct answer should be around 1.506)
-########## Done parallel false_sharing
-
-########################################################################
-# End of output for job 2039138.v-qsvr-1.aidevcloud
-# Date: Sat 12 Nov 2022 07:01:44 AM PST
-########################################################################
-@@@
-########################################################################
-#      Date:           Sat 12 Nov 2022 07:48:15 AM PST
-#    Job ID:           2039160.v-qsvr-1.aidevcloud
-#      User:           u176694
-# Resources:           neednodes=1:batch:ppn=2,nodes=1:batch:ppn=2,walltime=06:00:00
-########################################################################
-
-## u176694 is running HW1 Problem 1 - Calculate Mandelbrot area - parallel padding
-########## Compiling your parallel padding code
-########## Executing your parallel padding code
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 9.020579 seconds, with 1 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 4.518221 seconds, with 2 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 2.267503 seconds, with 4 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 1.156635 seconds, with 8 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 0.625293 seconds, with 16 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 0.423927 seconds, with 24 threads
-(Correct answer should be around 1.506)
-########## Done parallel padding
-
-########################################################################
-# End of output for job 2039160.v-qsvr-1.aidevcloud
-# Date: Sat 12 Nov 2022 07:48:39 AM PST
-########################################################################
-@@@
-########################################################################
-#      Date:           Sat 12 Nov 2022 08:23:57 AM PST
-#    Job ID:           2039174.v-qsvr-1.aidevcloud
-#      User:           u176694
-# Resources:           neednodes=1:batch:ppn=2,nodes=1:batch:ppn=2,walltime=06:00:00
-########################################################################
-
-## u176694 is running HW1 Problem 1 - Calculate Mandelbrot area - parallel reduction
-########## Compiling your parallel reduction code
-########## Executing your parallel reduction code
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 8.986111 seconds, with 1 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 7.642874 seconds, with 2 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 4.086676 seconds, with 4 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 2.515460 seconds, with 8 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 1.418774 seconds, with 16 threads
-Area of Mandlebrot set =   1.51085312 +/-   0.00050362
-
-time: 1.078743 seconds, with 24 threads
-(Correct answer should be around 1.506)
-########## Done parallel reduction
-
-########################################################################
-# End of output for job 2039174.v-qsvr-1.aidevcloud
-# Date: Sat 12 Nov 2022 08:24:29 AM PST
-########################################################################
+|  Number of Threads  |      serial       |      critical       |      atomic         |     false sharing   |      padding        |      reduction     |
+|:-------------------:|:-----------------:|:-------------------:|:-------------------:|:-------------------:|:-------------------:|:------------------:|
+| 1                   |    123.196259     |        0.152473         |        9.032136         |        8.905875         |        9.020579         |        8.986111        |
+| 2                   |       --          |        0.125662         |        7.693729         |        4.477742         |        4.518221         |        7.642874        |
+| 4                   |       --          |        0.082194         |        4.122802         |        2.260810         |        2.267503         |        4.086676        |
+| 8                   |       --          |        0.089109         |        2.549137         |        1.149872         |        1.156635         |        2.515460        |
+| 16                  |       --          |        0.086509         |        1.410493         |        0.628068         |        0.625293         |        1.418774        |
+| 24                  |       --          |        0.402451         |        1.022161         |        0.441075         |        0.423927         |        1.078743        |
