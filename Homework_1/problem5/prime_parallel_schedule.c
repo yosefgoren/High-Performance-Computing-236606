@@ -69,7 +69,7 @@ int main( )
    //    serial_section_sum += check_prime(i);
    
    omp_set_num_threads(NTHREADS);
-   #pragma omp parallel for schedule(static, 4) reduction(+ : sum)
+   #pragma omp parallel for schedule(guided) reduction(+ : sum)
    for (int i = 2; i <= ITER ; i++) {//2 <--- serial_section_iter
       if (check_prime(i))
          sum++;
