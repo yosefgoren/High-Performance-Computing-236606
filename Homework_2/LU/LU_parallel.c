@@ -22,7 +22,8 @@ int main(int argc, char **argv)
   double start;
   double end;
 
-  n=2000;
+  // n=2000;
+  n=500;
  
   a=(double **)malloc(sizeof(double *)*n);  
   b=(double **)malloc(sizeof(double *)*n);
@@ -45,14 +46,20 @@ int main(int argc, char **argv)
     start = omp_get_wtime();
 
   /*Perform LU decomposition*/
- for(k=0;k<n;k++){
-    for(j=k+1;j<n;j++){
+  for(k=0;k<n;k++)
+  {
+    #pragma omp parallel for
+    for(j=k+1;j<n;j++)
+    {
       a[k][j]=a[k][j]/a[k][k];//Scaling
     }
-    for(i=k+1;i<n;i++){ 
-     for(j=k+1;j<n;j++){
+    #pragma omp parallel for private(j)
+    for(i=k+1;i<n;i++)
+    { 
+      for(j=k+1;j<n;j++)
+      {
         a[i][j]=a[i][j]-a[i][k]*a[k][j];
-       } 
+      } 
     }
   }
   /*end of LU decomposition*/
@@ -60,6 +67,7 @@ int main(int argc, char **argv)
  printf("Operation took %lf\n",omp_get_wtime()-start);
 
  /*Inplace Verification step */
+//  #pragma omp parallel for private(i,j,k,l1,u1) collapse(2)
  for(i=0;i<n;i++){
    for(j=0;j<n;j++){
      c[i][j]=0;

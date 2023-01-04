@@ -19,46 +19,51 @@
 #define BVAL 5.0
 #define TOL  0.001
 
+void initialize_array(double *target, int size, double value){
+    int i;
+    for(i=0;i<size;i++){
+        target[i] = value;
+    }
+}
+
 int main(int argc, char **argv)
 {
     int Ndim, Pdim, Mdim;   /* A[N][P], B[P][M], C[N][M] */
     int i,j,k;
-    double *A, *B, *C, cval, tmp, err, errsq;
+    double *A, *B, *Bt, *C, cval, tmp, err, errsq;
     double start_time, run_time;
 
-    Ndim = ORDER;
-    Pdim = ORDER*100;
+    //set omp number of threads to 16:
+    omp_set_dynamic(0);
+    omp_set_num_threads(16);
+
+    Ndim = ORDER*100;
+    Pdim = ORDER;
     Mdim = ORDER*100;
 
     A = (double *)malloc(Ndim*Pdim*sizeof(double));
     B = (double *)malloc(Pdim*Mdim*sizeof(double));
+    Bt = (double *)malloc(Mdim*Pdim*sizeof(double));
     C = (double *)malloc(Ndim*Mdim*sizeof(double));
 
     /* Initialize matrices */
-
-    for (i=0; i<Ndim; i++)
-        for (j=0; j<Pdim; j++)
-            *(A+(i*Ndim+j)) = AVAL;
-
-    for (i=0; i<Pdim; i++)
-        for (j=0; j<Mdim; j++)
-            *(B+(i*Pdim+j)) = BVAL;
-
-    for (i=0; i<Ndim; i++)
-        for (j=0; j<Mdim; j++)
-            *(C+(i*Ndim+j)) = 0.0;
+    initialize_array(A, Ndim*Pdim, AVAL);
+    initialize_array(B, Pdim*Mdim, BVAL);
+    initialize_array(Bt, Mdim*Pdim, BVAL);
+    initialize_array(C, Ndim*Mdim, 0.0);
 
     /* Do the matrix product */
 
-    start_time = omp_get_wtime(); 
+    start_time = omp_get_wtime();
+    #pragma omp parallel for private(i, k, j, tmp) collapse(2)
     for (i=0; i<Ndim; i++){
         for (j=0; j<Mdim; j++){
             tmp = 0.0;
             for(k=0;k<Pdim;k++){
                 /* C(i,j) = sum(over k) A(i,k) * B(k,j) */
-                tmp += *(A+(i*Ndim+k)) *  *(B+(k*Pdim+j));
+                tmp += A[i*Pdim+k]*Bt[Pdim*j+k];
             }
-            *(C+(i*Ndim+j)) = tmp;
+            C[i*Mdim+j] = tmp;
         }
     }
    
@@ -72,7 +77,7 @@ int main(int argc, char **argv)
     errsq = 0.0;
     for (i=0; i<Ndim; i++){
         for (j=0; j<Mdim; j++){
-            err = *(C+i*Ndim+j) - cval;
+            err = C[i*Mdim+j] - cval;
             errsq += err * err;
         }
     }
