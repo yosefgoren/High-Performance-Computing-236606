@@ -4,7 +4,7 @@
 #include<math.h>
 #include "omp.h"
 
-void printMatrix(double **a,int n);//helper to print matrix
+void printMatrix(double *a,int n);//helper to print matrix
 
 
 void *memset(void *str,int c, size_t t);//too many warnings...so you know.
@@ -16,34 +16,26 @@ int main(int argc, char **argv)
   int n;
   int flag;
   double l1,u1;
-  double **a;
-  double **b;
-  double **c;
+  double *a;
+  double *b;
+  double *c;
   double start;
   double end;
 
-  // n=2000;
-  n=500;
+  n=2000;
+  // n=500;
  
-  a=(double **)malloc(sizeof(double *)*n);  
-  b=(double **)malloc(sizeof(double *)*n);
-  c=(double **)malloc(sizeof(double *)*n);
-  
-  for(i=0;i<n;i++){
-    a[i]=(double *)malloc(sizeof(double)*n); 
-    b[i]=(double *)malloc(sizeof(double)*n);
-    c[i]=(double *)malloc(sizeof(double)*n);
-   }
- 
+  a=(double *)malloc(sizeof(double)*n*n);  
+  b=(double *)malloc(sizeof(double)*n*n);
+  c=(double *)malloc(sizeof(double)*n*n);
 
   for(i=0;i<n;i++){
     for(j=0;j<n;j++){
-      a[i][j]=((rand()%10)+1);
+      a[i*n+j]=((rand()%10)+1);
     }
-    memcpy((void *)b[i],(const void *)a[i],(size_t)(n*sizeof(double)));
   }
-    
-    start = omp_get_wtime();
+  memcpy((void *)b,(const void *)a,(size_t)(n*n*sizeof(double)));  
+  start = omp_get_wtime();
 
   /*Perform LU decomposition*/
   for(k=0;k<n;k++)
@@ -51,14 +43,14 @@ int main(int argc, char **argv)
     #pragma omp parallel for
     for(j=k+1;j<n;j++)
     {
-      a[k][j]=a[k][j]/a[k][k];//Scaling
+      a[k*n+j]=a[k*n+j]/a[k*n+k];//Scaling
     }
     #pragma omp parallel for private(j)
     for(i=k+1;i<n;i++)
     { 
       for(j=k+1;j<n;j++)
       {
-        a[i][j]=a[i][j]-a[i][k]*a[k][j];
+        a[i*n+j]=a[i*n+j]-a[i*n+k]*a[k*n+j];
       } 
     }
   }
@@ -70,17 +62,17 @@ int main(int argc, char **argv)
 //  #pragma omp parallel for private(i,j,k,l1,u1) collapse(2)
  for(i=0;i<n;i++){
    for(j=0;j<n;j++){
-     c[i][j]=0;
+     c[i*n+j]=0;
 
      for(k=0;k<n;k++){
-       if(i>=k)l1=a[i][k];
+       if(i>=k)l1=a[i*n+k];
        else l1=0;
 
        if(k==j)u1=1;
-       else if(k<j)u1=a[k][j]; 
+       else if(k<j)u1=a[k*n+j]; 
        else u1=0.0;
        
-        c[i][j]=c[i][j]+(l1*u1);
+        c[i*n+j]=c[i*n+j]+(l1*u1);
       
      } 
    }
@@ -88,7 +80,7 @@ int main(int argc, char **argv)
  flag=0;
  for(i=0;i<n;i++){
    for(j=0;j<n;j++){
-     if(fabs(c[i][j]-b[i][j])>0.01){
+     if(fabs(c[i*n+j]-b[i*n+j])>0.01){
          flag=1;
          break;
      }
@@ -101,11 +93,6 @@ int main(int argc, char **argv)
  else printf("Match\n");
  
  /*Time to free the memory*/
-  for(i=0;i<n;i++){
-    free(a[i]);
-    free(b[i]);
-    free(c[i]);
-  }
   free(a);
   free(b);
   free(c);
@@ -114,11 +101,11 @@ int main(int argc, char **argv)
 }
 
 
-void printMatrix(double **mat,int n){
+void printMatrix(double *mat,int n){
   int i,j;
   for(i=0;i<n;i++){
     for(j=0;j<n;j++){
-      printf("%lf ",mat[i][j]);
+      printf("%lf ",mat[i*n+j]);
     }
     printf("\n");
   }
