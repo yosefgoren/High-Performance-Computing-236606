@@ -1,0 +1,4 @@
+LU_serial.c:13:5: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
+int main(argc,argv)
+    ^
+1 warning generated.
