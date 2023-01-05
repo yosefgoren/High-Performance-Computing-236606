@@ -23,7 +23,6 @@ int main(int argc, char **argv)
   double end;
 
   n=2000;
-  // n=500;
  
   a=(double *)malloc(sizeof(double)*n*n);  
   b=(double *)malloc(sizeof(double)*n*n);
@@ -40,12 +39,12 @@ int main(int argc, char **argv)
   /*Perform LU decomposition*/
   for(k=0;k<n;k++)
   {
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(guided)
     for(j=k+1;j<n;j++)
     {
       a[k*n+j]=a[k*n+j]/a[k*n+k];//Scaling
     }
-    #pragma omp parallel for private(j)
+    #pragma omp parallel for private(j) schedule(guided)
     for(i=k+1;i<n;i++)
     { 
       for(j=k+1;j<n;j++)
