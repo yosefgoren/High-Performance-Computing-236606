@@ -1,16 +1,11 @@
-FLAGS=-openmp -Od -Qxcore-avx512
+FLAGS=-openmp -Od
 CC=icx
 
 NAME?=n-body
 
-all: serial parallel
-
-
-serial: $(NAME)_serial.c
-	icx -o $@ $(FLAGS) $^
-
-parallel: $(NAME)_parallel.c
-	icx -o $@ $(FLAGS) $^
+all:
+	$(CC) -o parallel $(FLAGS) $(NAME)_parallel.c
+	$(CC) -o serial $(FLAGS) $(NAME)_serial.c
 
 clean:
 	del *.exe

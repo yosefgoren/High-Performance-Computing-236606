@@ -14,6 +14,7 @@ void randomizeBodies(float *data, int n) {
 }
 
 void bodyForce(Body *p, float dt, int n) {
+  // #pragma omp parallel for schedule(guided)
   for (int i = 0; i < n; i++) { 
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
 
@@ -34,6 +35,8 @@ void bodyForce(Body *p, float dt, int n) {
 
 int main(const int argc, const char** argv) {
   
+  srand(42);//make deterministic.
+
   int nBodies = 20000;
   if (argc > 1) nBodies = atoi(argv[1]);
 
@@ -49,9 +52,9 @@ int main(const int argc, const char** argv) {
   double totalTime = 0.0;
   double start_time = omp_get_wtime();
   for (int iter = 1; iter <= nIters; iter++) {
-
     bodyForce(p, dt, nBodies); // compute interbody forces
 
+    // #pragma omp parallel for schedule(guided)
     for (int i = 0 ; i < nBodies; i++) { // integrate position
       p[i].x += p[i].vx*dt;
       p[i].y += p[i].vy*dt;
@@ -59,5 +62,6 @@ int main(const int argc, const char** argv) {
     }
   }
   printf("Execution time: %f seconds \n", omp_get_wtime()-start_time);
+  printf("final positions of first body: %f %f %f\n", p[0].x, p[0].y, p[0].z);
   free(buf);
 }
