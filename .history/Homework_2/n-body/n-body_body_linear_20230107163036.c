@@ -10,7 +10,7 @@
 
 typedef struct { float x, y, z, vx, vy, vz; } Body;
 
-typedef struct { float positions[N_BODIES][N_DIMS], velocities[N_BODIES][N_DIMS]; } Bodies;
+typedef struct { float positions[N_DIMS][N_BODIES], velocities[N_DIMS][N_BODIES]; } Bodies;
 
 void randomizeBodies_old(float *data, int n) {
   for (int i = 0; i < n; i++) {
@@ -24,13 +24,14 @@ void randomizeBodies(Bodies* data) {
   Body *p = (Body*)buf;
   randomizeBodies_old(buf, 6*N_BODIES);
   for(int i = 0; i < N_BODIES; ++i){
-    data->positions[i][0] = p[i].x;
-    data->positions[i][1] = p[i].y;
-    data->positions[i][2] = p[i].z;
-    data->velocities[i][0] = p[i].vx;
-    data->velocities[i][1] = p[i].vy;
-    data->velocities[i][2] = p[i].vz;
+    data->positions[0][i] = p[i].x;
+    data->positions[1][i] = p[i].y;
+    data->positions[2][i] = p[i].z;
+    data->velocities[0][i] = p[i].vx;
+    data->velocities[1][i] = p[i].vy;
+    data->velocities[2][i] = p[i].vz;
   }
+  free(buf);
 }
 
 void update_loading_icon(char* c, int iter){
@@ -72,10 +73,9 @@ int main(const int argc, const char** argv) {
       
       for(int j = 0; j < N_BODIES; ++j){
         float delta[N_DIMS];
-        float* pos_a = p->positions[j], *pos_b = p->positions[effected];
-        delta[0] = pos_a[0] - pos_b[0];
-        delta[1] = pos_a[1] - pos_b[1];
-        delta[2] = pos_a[2] - pos_b[2];
+        delta[0] = p->positions[0][j] - p->positions[0][effected];
+        delta[1] = p->positions[1][j] - p->positions[1][effected];
+        delta[2] = p->positions[2][j] - p->positions[2][effected];
         float distSqr = delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2] + SOFTENING;
         float invDist = 1.0f / sqrtf(distSqr);
         float invDist3 = invDist * invDist * invDist;
@@ -83,18 +83,15 @@ int main(const int argc, const char** argv) {
         force[1] += delta[1] * invDist3;
         force[2] += delta[2] * invDist3;
       }
-      float* vs = p->velocities[effected];
-      vs[0] += dt*force[0];
-      vs[1] += dt*force[1];
-      vs[2] += dt*force[2];
+      p->velocities[0][effected] += dt*force[0];
+      p->velocities[1][effected] += dt*force[1];
+      p->velocities[2][effected] += dt*force[2];
     }
     #pragma omp parallel for schedule(guided)
     for(int effected = 0; effected < N_BODIES; ++effected){
-      float* pos = p->positions[effected];
-      float* vel = p->velocities[effected];
-      pos[0] += vel[0] * dt;
-      pos[1] += vel[1] * dt;
-      pos[2] += vel[2] * dt;
+      p->positions[0][effected] += p->velocities[0][effected] * dt;
+      p->positions[1][effected] += p->velocities[1][effected] * dt;
+      p->positions[2][effected] += p->velocities[2][effected] * dt;
     }
   }
   printf("Parallel Execution time: %f seconds with %d threads\n\n", omp_get_wtime()-start_time, NUM_THREADS);
