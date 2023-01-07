@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <sys/time.h>
+#include <time.h>
 #include <omp.h>
 
 #define cell_size 3
@@ -20,6 +20,15 @@
 
 /* Check that the solution is finite */
 void validate(double *Q, int m, int n) {
+  static const int points_to_check[3][100] =
+  {
+    {61, 17, 32, 98, 67, 69, 71, 63, 18, 51, 76, 63, 62, 80, 92, 53, 32, 96, 81, 74, 66, 7, 21, 20, 5, 13, 42, 19, 69, 30, 2, 14, 90, 27, 78, 72, 50, 87, 43, 4, 31, 60, 23, 96, 10, 31, 43, 13, 66, 41, 92, 65, 87, 49, 72, 4, 69, 19, 32, 50, 2, 29, 48, 49, 3, 70, 63, 59, 80, 41, 49, 35, 9, 91, 42, 78, 33, 35, 74, 13, 89, 58, 22, 57, 54, 45, 80, 52, 49, 82, 38, 40, 23, 52, 31, 22, 63, 85, 29},
+    {72, 5, 47, 35, 62, 1, 84, 43, 76, 76, 65, 38, 0, 67, 38, 24, 69, 56, 48, 65, 20, 41, 66, 96, 84, 9, 34, 50, 96, 3, 50, 16, 99, 97, 4, 43, 43, 77, 69, 48, 6, 49, 6, 5, 67, 64, 68, 60, 83, 25, 29, 76, 85, 28, 50, 79, 59, 25, 13, 83, 54, 85, 97, 74, 73, 68, 69, 41, 20, 91, 81, 16, 18, 62, 1, 13, 98, 66, 44, 5, 72, 21, 15, 74, 32, 3, 25, 70, 87, 89, 65, 94, 39, 56, 11, 74, 95, 45, 65, 7},
+    {0, 2, 0, 0, 2, 2, 1, 2, 1, 0, 1, 2, 0, 0, 0, 2, 0, 2, 2, 1, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 1, 0, 1, 0, 2, 2, 2, 1, 1, 0, 0, 2, 1, 2, 1, 2, 0, 2, 0, 2, 0, 0, 0, 1, 0, 1, 1, 1, 0, 2, 1, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2}
+  };
+  for(int b = 0; b < 100; b++)
+    printf("%lf ", Q(points_to_check[2][b], points_to_check[0][b], points_to_check[1][b]));
+  printf("\n");
   int i, j, k;
   for (i = 0; i < n; i++) 
     for (j = 0; j < m; j++) 
@@ -133,13 +142,12 @@ void solver(double *Q, double **ffx, double **ffy, double **nFx, double **nFy,
   during debugging
 */
 int main(int argc, char **argv) {
-  
+  srand(42);//make deterministic  
   int i, j, m, n;
   double *Q;
   double *x, *y;
   double **ffx, **nFx, **ffy, **nFy;
   double dx, dt, epsi, delta, dy, tend, tmp, stime, etime;
-  
 
   /* Use m volumes in the x-direction and n volumes in the y-direction */    
   m = 1000;
@@ -214,6 +222,7 @@ int main(int argc, char **argv) {
   solver(Q, ffx, ffy, nFx, nFy, m, n, tend, dx, dy, dt);
   etime = omp_get_wtime();
 
+  printf("validating...\n");
   validate(Q, m,  n);
 
   printf("Serial Solver took %g seconds\n", etime - stime);
