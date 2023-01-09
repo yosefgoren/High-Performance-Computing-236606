@@ -27,6 +27,10 @@ int main()
        c[j] = 3.3*j;
     }*/
 
+   //     \ | / 
+   //      0 0  
+   //      ---
+
     double start_time = omp_get_wtime();
    //Step 2 Compute
     #pragma omp parallel for schedule(static)

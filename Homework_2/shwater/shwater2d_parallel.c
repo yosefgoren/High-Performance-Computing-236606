@@ -34,9 +34,6 @@ void validate(double *Q, int m, int n) {
     {0, 2, 0, 0, 2, 2, 1, 2, 1, 0, 1, 2, 0, 0, 0, 2, 0, 2, 2, 1, 0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 0, 1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 1, 0, 1, 0, 2, 2, 2, 1, 1, 0, 0, 2, 1, 2, 1, 2, 0, 2, 0, 2, 0, 0, 0, 1, 0, 1, 1, 1, 0, 2, 1, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 2, 0, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2}
   };
   static const double expected[100] = {4.515081, -0.168916, 4.382132, 4.562882, -2.029167, -0.028526, -2.352844, -1.508560, -0.783868, 4.510216, -2.224567, -1.361882, 4.389875, 4.534666, 4.544424, -0.838870, 4.457381, -2.208642, -1.859772, -2.196424, 4.427407, -0.257625, -0.827668, -0.983333, -1.113786, -0.282714, -1.037169, 4.367384, -2.428838, -0.105962, 4.350763, -0.405491, -2.561219, -2.152938, -0.192032, -1.614111, -1.440431, -2.446142, -1.565621, -0.593327, -0.212478, -1.741896, 4.280712, -1.183124, 4.420690, -1.649430, -1.858007, -1.344441, -2.267451, -1.063378, 4.539541, 4.527229, -2.522358, -1.270110, -1.809536, -0.191800, -1.989847, 4.298997, -0.419570, 4.527126, -0.336782, 4.513318, 4.560512, 4.501936, -0.135631, 4.521589, -2.055492, -1.624640, -1.813672, 4.543038, -2.143103, -0.858257, -0.433862, 4.547899, 4.327122, 4.469610, -1.529618, 4.451977, 4.494083, 4.263640, -2.422862, 4.398519, -0.574127, -1.989610, -1.088903, 4.336438, -1.086336, 4.495991, -2.218578, -2.508848, -1.742109, -2.214745, -1.019473, -1.644877, -0.361974, -1.760668, -2.402763, -2.127612, -1.650959, 0.033417};
-  // for(int b = 0; b < 100; b++)
-  //   printf("%lf ", Q(pchk[2][b], pchk[0][b], pchk[1][b]));
-  // printf("\n");
   for(int b = 0; b < 100; b++){
     if (!check_close(Q(pchk[2][b], pchk[0][b], pchk[1][b]), expected[b])) {
       fprintf(stderr, "Invalid solution of parallel solver\n");
@@ -118,11 +115,11 @@ void laxf_scheme_2d(double *Q, double **ffx, double **ffy, double **nFx, double 
 }
 
 
-void solver(double *Q, double **ffx, double **ffy, double **nFx, double **nFy,
-        int m, int n, double tend, double dx, double dy, double dt) {
+void solver(double *Q, int m, int n, double tend, double dx, double dy, double dt) {
   double bc_mask[3] = {1.0, -1.0, -1.0};
   double time;
   int i, j, k, steps;
+  double **ffx, **nFx, **ffy, **nFy;
   
   steps = ceil(tend / dt);
   #pragma omp parallel private(i, j, k, time, ffx, ffy, nFx, nFy)
@@ -193,7 +190,6 @@ int main(int argc, char **argv) {
   int i, j, m, n;
   double *Q;
   double *x, *y;
-  double **ffx, **nFx, **ffy, **nFy;
   double dx, dt, epsi, delta, dy, tend, tmp, stime, etime;
   omp_set_num_threads(NUM_THREADS);
   /* Use m volumes in the x-direction and n volumes in the y-direction */    
@@ -248,7 +244,7 @@ int main(int argc, char **argv) {
   }
 
   stime = omp_get_wtime();
-  solver(Q, ffx, ffy, nFx, nFy, m, n, tend, dx, dy, dt);
+  solver(Q, m, n, tend, dx, dy, dt);
   etime = omp_get_wtime();
 
   validate(Q, m, n);
