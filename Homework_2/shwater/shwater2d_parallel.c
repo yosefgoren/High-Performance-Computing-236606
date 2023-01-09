@@ -52,6 +52,7 @@ void validate(double *Q, int m, int n) {
       fprintf(stderr, "Invalid solution of parallel solver\n");
       exit(-1);
     }
+  printf("Valid solution of parallel solver\n");
 }
 
 /* Flux function in the x-direction */
@@ -90,7 +91,7 @@ void laxf_scheme_2d(double *Q, double **ffx, double **ffy, double **nFx, double 
   int i, j, k;
     
   /* Calculate and update fluxes in the x-direction */ 
-  // #pragma omp parallel for private(j, k)
+  #pragma omp for
   for (i = 1; i < n; i++) {
     fx(Q, ffx, m, n, i);
     for (j = 1; j < m; j++)
@@ -102,8 +103,8 @@ void laxf_scheme_2d(double *Q, double **ffx, double **ffy, double **nFx, double 
         Q(k, j, i) = Q(k, j, i)  - dt/dx * ((nFx[k][j+1] - nFx[k][j]));
   }
     
-  // #pragma omp parallel for 
   /* Calculate and update fluxes in the y-direction */
+  #pragma omp for 
   for (i = 1; i < m; i++) {
     fy(Q, ffy, m, n, i);
     for (j = 1; j < n; j++)
@@ -114,7 +115,6 @@ void laxf_scheme_2d(double *Q, double **ffx, double **ffy, double **nFx, double 
       for (k = 0; k < cell_size; k++)
     Q(k,i,j) = Q(k,i,j) -  dt/dy * ((nFy[k][j+1]  -  nFy[k][j]));
   }
-
 }
 
 
@@ -124,28 +124,59 @@ void solver(double *Q, double **ffx, double **ffy, double **nFx, double **nFy,
   double time;
   int i, j, k, steps;
   
-  steps = ceil(tend / dt);  
-  for (i = 0, time = 0.0; i < steps; i++, time += dt) { 
+  steps = ceil(tend / dt);
+  #pragma omp parallel private(i, j, k, time, ffx, ffy, nFx, nFy)
+  {
+    /* Allocate memory for fluxes */
+    ffx = (double **) malloc(cell_size * sizeof(double *));
+    ffy = (double **) malloc(cell_size * sizeof(double *));
+    nFx = (double **) malloc(cell_size * sizeof(double *));
+    nFy = (double **) malloc(cell_size * sizeof(double *));
+
+    ffx[0] = (double *) malloc(cell_size * m * sizeof(double));
+    ffy[0] = (double *) malloc(cell_size * n * sizeof(double));
+    nFx[0] = (double *) malloc(cell_size * m * sizeof(double));
+    nFy[0] = (double *) malloc(cell_size * n * sizeof(double));
+
+    for (i = 0; i < cell_size; i++) {
+      ffx[i] =  ffx[0] + i * m;
+      nFx[i] =  nFx[0] + i * m;
+      ffy[i] =  ffy[0] + i * n;
+      nFy[i] =  nFy[0] + i * n;
+    }
+
+    for (i = 0, time = 0.0; i < steps; i++, time += dt) { 
     /* Apply boundary condition */
     {
-        for (j = 1; j < n - 1 ; j++) {
-          for (k = 0; k < cell_size; k++) {
-            Q(k, 0, j) = bc_mask[k] *  Q(k, 1, j);
-            Q(k, m-1, j) = bc_mask[k] *  Q(k, m-2, j);
-          }
+      #pragma omp for
+      for (j = 1; j < n - 1 ; j++) {
+        for (k = 0; k < cell_size; k++) {
+          Q(k, 0, j) = bc_mask[k] *  Q(k, 1, j);
+          Q(k, m-1, j) = bc_mask[k] *  Q(k, m-2, j);
         }
+      }
 
-        for (j = 0; j < m; j++)  {
-          for (k = 0; k < cell_size; k++) {
-            Q(k, j, 0) = bc_mask[k] * Q(k, j, 1);
-            Q(k, j, n-1) = bc_mask[k] * Q(k, j, n-2);
-          }
+      #pragma omp for
+      for (j = 0; j < m; j++)  {
+        for (k = 0; k < cell_size; k++) {
+          Q(k, j, 0) = bc_mask[k] * Q(k, j, 1);
+          Q(k, j, n-1) = bc_mask[k] * Q(k, j, n-2);
         }
+      }
     }
-    /* Update all volumes with the Lax-Friedrich's scheme */     
-    laxf_scheme_2d(Q, ffx, ffy, nFx, nFy, m, n, dx, dy, dt);  
-  
-  }
+      /* Update all volumes with the Lax-Friedrich's scheme */     
+      laxf_scheme_2d(Q, ffx, ffy, nFx, nFy, m, n, dx, dy, dt);  
+    }
+
+    free(ffx[0]);
+    free(nFx[0]);
+    free(ffy[0]);
+    free(nFy[0]);
+    free(ffx);
+    free(ffy); 
+    free(nFx); 
+    free(nFy); 
+  } 
 }
   
 /*
@@ -193,24 +224,6 @@ int main(int argc, char **argv) {
 
   x = (double *) malloc(m * sizeof(double));
   y = (double *) malloc(n * sizeof(double));	
-
-  /* Allocate memory for fluxes */
-  ffx = (double **) malloc(cell_size * sizeof(double *));
-  ffy = (double **) malloc(cell_size * sizeof(double *));
-  nFx = (double **) malloc(cell_size * sizeof(double *));
-  nFy = (double **) malloc(cell_size * sizeof(double *));
-
-  ffx[0] = (double *) malloc(cell_size * m * sizeof(double));
-  ffy[0] = (double *) malloc(cell_size * n * sizeof(double));
-  nFx[0] = (double *) malloc(cell_size * m * sizeof(double));
-  nFy[0] = (double *) malloc(cell_size * n * sizeof(double));
-
-  for (i = 0; i < cell_size; i++) {
-    ffx[i] =  ffx[0] + i * m;
-    nFx[i] =  nFx[0] + i * m;
-    ffy[i] =  ffy[0] + i * n;
-    nFy[i] =  nFy[0] + i * n;
-  }
     
   for (i = 0,tmp= -dx/2 + xstart; i < m; i++, tmp += dx)
     x[i] = tmp;
@@ -238,24 +251,13 @@ int main(int argc, char **argv) {
   solver(Q, ffx, ffy, nFx, nFy, m, n, tend, dx, dy, dt);
   etime = omp_get_wtime();
 
-  validate(Q, m,  n);
+  validate(Q, m, n);
 
   printf("Parallel Solver took %g seconds with %d threads\n", etime - stime, NUM_THREADS);
-
 
   free(Q);
   free(x);
   free(y);
-
-  free(ffx[0]);
-  free(ffy[0]);
-  free(nFx[0]);
-  free(nFy[0]);
-
-  free(ffx);
-  free(ffy);
-  free(nFx);
-  free(nFy);
 
   return 0;    
 }
