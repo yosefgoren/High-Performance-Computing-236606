@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#define NUM_THREADS 16
+#define NUM_THREADS 24
 #define SOFTENING 1e-9f
 
 #define N_BODIES 20000
