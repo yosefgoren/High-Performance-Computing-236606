@@ -5,19 +5,51 @@
 #include <math.h>
 #define NTHREADS 12
 
+#define DEBUG 0
+
 void gauss_seidel(int tsteps, int size, int TS, double **p) {
-    
-   for(int t=0; t< tsteps; ++t)
-      for (int ii = 1; ii+TS < size; ii+=TS) 
-         for (int jj = 1; jj+TS < size; jj+=TS) 
-            //insert all the following work (on TSxTS cells) to a single task
-            for (int i = ii; i < ii+TS; ++i)
-                       for (int j = jj; j < jj+TS; ++j)
-                          p[i][j] = 0.2*p[i][j-1] + 
-                                    0.3*p[i][j+1] +
-                                    0.1*p[i-1][j] + 
-                                    0.4*p[i+1][j];       
-   
+  int t, ii, jj;
+  #if DEBUG
+  printf("{\n");
+  #endif
+  #pragma omp parallel
+  {
+    #pragma omp single
+    for(t=0; t< tsteps; ++t){
+      #if DEBUG
+      printf("\t{'T', %d},\n", t);
+      #endif
+      for(ii = 1; ii+TS < size; ii+=TS){
+        for(jj = 1; jj+TS < size; jj+=TS){
+          #if DEBUG
+          for (int i = ii; i < ii+TS; ++i){
+            for (int j = jj; j < jj+TS; ++j){
+              printf("\t{'A', %d, %d},\n", i, j);
+            }
+          }
+          #endif
+          //insert all the following work (on TSxTS cells) to a single task
+          //Only the bottom right item in each block is used as the in/out variable for the purposes of task dependency.
+          #pragma omp task firstprivate(ii, jj) depend(in: p[ii+TS-1][jj-1], p[ii-1][jj+TS-1]) depend(out: p[ii+TS-1][jj+TS-1])
+          for (int i = ii; i < ii+TS; ++i){
+            for (int j = jj; j < jj+TS; ++j){
+              #if DEBUG
+              printf("\t{'S', %d, %d},\n", i, j);
+              #endif
+              p[i][j] = 0.2*p[i][j-1]+ 
+                        0.3*p[i][j+1]+
+                        0.1*p[i-1][j]+ 
+                        0.4*p[i+1][j];       
+            }
+          }
+        }
+      }
+      #pragma omp taskwait
+    }
+  }
+  #if DEBUG
+  printf("}\n");
+  #endif
 }
 
 
@@ -28,7 +60,7 @@ int main(){
   int tsteps = 100;
   int i,j;
   double start;
-  int TS = 10;
+  int TS = 100;
   omp_set_num_threads(NTHREADS);
   p=(double **)malloc(sizeof(double *)*size);  
   
