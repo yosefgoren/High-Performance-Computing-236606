@@ -14,7 +14,7 @@
 #define ystart 0.0
 #define xend 4.0
 #define yend 4.0
-#define NUM_THREADS 16
+#define NUM_THREADS 12
 
 #define Q(i, j, k) Q[((k) + n * ((j) + m * (i)))]
 
