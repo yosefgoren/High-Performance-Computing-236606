@@ -1,0 +1,28 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.8.0 Build 20221119_000000
+
+Compiler options: -O3 -qopt-report=5 -qopt-report-phase=vec -o ./bin_ipo_simd_opt/openmp_simd_pi -ipo -xCORE-AVX512 -qopt-zmm-usage=high
+
+Begin optimization report for: main()
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at pi.c(19,5)
+   remark #15305: vectorization support: vector length 8
+   remark #15399: vectorization support: unroll factor set to 4
+   remark #15309: vectorization support: normalized vectorization overhead 0.138
+   remark #15355: vectorization support: sum is double type reduction   [ pi.c(16,5) ]
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15475: --- begin vector cost summary ---
+   remark #15476: scalar cost: 41 
+   remark #15477: vector cost: 6.120 
+   remark #15478: estimated potential speedup: 6.690 
+   remark #15486: divides: 1 
+   remark #15487: type converts: 1 
+   remark #15488: --- end vector cost summary ---
+LOOP END
+===========================================================================

@@ -4,6 +4,7 @@
 
 #define N 1000000000
 
+#pragma omp declare simd notinbranch
 double f( double x );
 
 main()
@@ -16,6 +17,7 @@ main()
     sum = 0.0;
 
     start = clock();
+    #pragma omp simd reduction(+:sum)
     for ( i=0; i<N ; i++ ){
         x = h*(i-0.5);
         sum = sum + f(x);

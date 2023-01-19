@@ -1,0 +1,21 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.8.0 Build 20221119_000000
+
+Compiler options: -O2 -qopt-report=5 -qopt-report-phase=vec,loop -o ./bin_default_opt/O2_pi
+
+Begin optimization report for: main()
+
+    Report from: Loop nest & Vector optimizations [loop, vec]
+
+
+
+Non-optimizable loops:
+
+
+LOOP BEGIN at pi.c(19,5)
+   remark #15543: loop was not vectorized: loop with function call not considered an optimization candidate.
+LOOP END
+===========================================================================
