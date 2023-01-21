@@ -23,7 +23,8 @@ int main() {
   double start = omp_get_wtime();
 
   // Problem size, forms an nxn grid
-  int n = 22000;
+  // int n = 22000;
+  int n = 10000;
 
   // Number of timesteps
   int nsteps = 50;
@@ -151,6 +152,7 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
   const double r2 = 1.0 - 4.0*r;
 
   // Loop over the nxn grid
+  #pragma omp parallel for collapse(2)
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < n; ++j) {
 
