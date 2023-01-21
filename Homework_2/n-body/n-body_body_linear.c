@@ -94,7 +94,7 @@ int main(const int argc, const char** argv) {
       p->positions[2][effected] += p->velocities[2][effected] * dt;
     }
   }
-  printf("Parallel Execution time: %f seconds with %d threads\n\n", omp_get_wtime()-start_time, NUM_THREADS);
+  printf("Parallel Execution time: %f seconds with %d threads\n\n", omp_get_wtime()-start_time);
 
   float res[3];
   for(int dim = 0; dim < N_DIMS; ++dim){
