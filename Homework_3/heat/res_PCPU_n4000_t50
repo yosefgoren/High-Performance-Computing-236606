@@ -1,0 +1,29 @@
+starting to compile
+starting run
+
+ MMS heat equation
+
+--------------------
+Problem input
+
+ Grid size: 4000 x 4000
+ Cell width: 2.499375E-01
+ Grid length: 1000.000000 x 1000.000000
+
+ Alpha: 1.000000E-01
+
+ Steps: 50
+ Total time: 5.000000E-01
+ Time step: 1.000000E-02
+--------------------
+Stability
+
+ r value: 0.016008
+--------------------
+Results
+
+Error (L2norm): 2.045005E-10
+Solve time (s): 0.938021
+Total time (s): 1.820701
+--------------------
+finished run

@@ -1,0 +1,37 @@
+starting to compile
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/opt/sw/gcc/10.2.0/gcc-releases-gcc-10.2.0/install/libexec/gcc/x86_64-pc-linux-gnu/10.2.0/lto-wrapper
+Target: x86_64-pc-linux-gnu
+Configured with: ./configure --prefix=/opt/sw/gcc/10.2.0/gcc-releases-gcc-10.2.0/install --disable-multilib
+Thread model: posix
+Supported LTO compression algorithms: zlib
+gcc version 10.2.0 (GCC) 
+starting run
+
+ MMS heat equation
+
+--------------------
+Problem input
+
+ Grid size: 4000 x 4000
+ Cell width: 2.499375E-01
+ Grid length: 1000.000000 x 1000.000000
+
+ Alpha: 1.000000E-01
+
+ Steps: 50
+ Total time: 5.000000E-01
+ Time step: 1.000000E-02
+--------------------
+Stability
+
+ r value: 0.016008
+--------------------
+Results
+
+Error (L2norm): 2.045005E-10
+Solve time (s): 26.026286
+Total time (s): 26.908103
+--------------------
+finished run

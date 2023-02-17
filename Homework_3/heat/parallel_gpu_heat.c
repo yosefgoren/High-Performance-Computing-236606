@@ -23,7 +23,7 @@ int main() {
   double start = omp_get_wtime();
 
   // Problem size, forms an nxn grid
-  int n = 22000;
+  int n = 4000;
 
   // Number of timesteps
   int nsteps = 50;
@@ -67,6 +67,13 @@ int main() {
   double *u     = malloc(sizeof(double)*n*n);
   double *u_tmp = malloc(sizeof(double)*n*n);
   double *tmp;
+  // #pragma omp target enter data map(alloc: u[0:n*n]) map(alloc: u_tmp[0:n*n])
+  // #pragma omp target enter data map(to: u[0:n*n]) map(to: u_tmp[0:n*n])
+  
+  // const int default_target = omp_get_default_device();
+  // double *u     = omp_target_alloc(sizeof(double)*n*n, default_target);
+  // double *u_tmp = omp_target_alloc(sizeof(double)*n*n, default_target);
+  // double *tmp;
 
   // Set the initial value of the grid under the MMS scheme
   initial_value(n, dx, length, u);
@@ -78,6 +85,7 @@ int main() {
 
   // Start the solve timer
   double tic = omp_get_wtime();
+  #pragma omp target enter data map(to: u[0:n*n]) map(to: u_tmp[0:n*n])
   for (int t = 0; t < nsteps; ++t) {
 
     // Call the solve kernel
@@ -93,6 +101,7 @@ int main() {
   // Stop solve timer
   double toc = omp_get_wtime();
 
+  #pragma omp target exit data map(from: u[0:n*n])
   //
   // Check the L2-norm of the computed solution
   // against the *known* solution from the MMS scheme
@@ -118,23 +127,24 @@ int main() {
 // Sets the mesh to an initial value, determined by the MMS scheme
 void initial_value(const int n, const double dx, const double length, double * restrict u) {
 
-  double y = dx;
+  // #pragma omp target teams distribute 
+  #pragma omp parallel for collapse(2)
   for (int j = 0; j < n; ++j) {
-    double x = dx; // Physical x position
+    // #pragma omp parallel for simd
     for (int i = 0; i < n; ++i) {
+      double y = dx*(j+1);
+      double x = dx*(i+1); // Physical x position
       u[i+j*n] = sin(PI * x / length) * sin(PI * y / length);
-      x += dx;
     }
-    y += dx; // Physical y position
   }
-
 }
-
 
 // Zero the array u
 void zero(const int n, double * restrict u) {
-
+  // #pragma omp target teams distribute 
+  #pragma omp parallel for collapse(2)
   for (int i = 0; i < n; ++i) {
+    // #pragma omp parallel for simd
     for (int j = 0; j < n; ++j) {
       u[i+j*n] = 0.0;
     }
@@ -151,20 +161,18 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
   const double r2 = 1.0 - 4.0*r;
 
   // Loop over the nxn grid
-  #pragma omp target map(tofrom: u[0:n*n-1]) map(tofrom: u_tmp[0:n*n-1])
-  {
-    #pragma omp parallel for
-    for (int i = 0; i < n; ++i) {
-      for (int j = 0; j < n; ++j) {
+  #pragma omp target teams distribute 
+  for (int i = 0; i < n; ++i) {
+    #pragma omp parallel for simd
+    for (int j = 0; j < n; ++j) {
 
-        // Update the 5-point stencil, using boundary conditions on the edges of the domain.
-        // Boundaries are zero because the MMS solution is zero there.
-        u_tmp[i+j*n] =  r2 * u[i+j*n] +
-        r * ((i < n-1) ? u[i+1+j*n] : 0.0) +
-        r * ((i > 0)   ? u[i-1+j*n] : 0.0) +
-        r * ((j < n-1) ? u[i+(j+1)*n] : 0.0) +
-        r * ((j > 0)   ? u[i+(j-1)*n] : 0.0);
-      }
+      // Update the 5-point stencil, using boundary conditions on the edges of the domain.
+      // Boundaries are zero because the MMS solution is zero there.
+      u_tmp[i+j*n] =  r2 * u[i+j*n] +
+      r * ((i < n-1) ? u[i+1+j*n] : 0.0) +
+      r * ((i > 0)   ? u[i-1+j*n] : 0.0) +
+      r * ((j < n-1) ? u[i+(j+1)*n] : 0.0) +
+      r * ((j > 0)   ? u[i+(j-1)*n] : 0.0);
     }
   }
 }

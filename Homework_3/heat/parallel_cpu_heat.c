@@ -16,15 +16,17 @@ void solve(const int n, const double alpha, const double dx, const double dt, co
 double solution(const double t, const double x, const double y, const double alpha, const double length);
 double l2norm(const int n, const double * restrict u, const int nsteps, const double dt, const double alpha, const double dx, const double length);
 
+#define N_THREADS 64
 // Main function
 int main() {
-
+  omp_set_dynamic(0);
+  omp_set_num_threads(N_THREADS);
   // Start the total program runtime timer
   double start = omp_get_wtime();
 
   // Problem size, forms an nxn grid
-  // int n = 22000;
-  int n = 10000;
+  int n = 4000;
+  //int n = 10000;
 
   // Number of timesteps
   int nsteps = 50;
@@ -118,29 +120,24 @@ int main() {
 
 // Sets the mesh to an initial value, determined by the MMS scheme
 void initial_value(const int n, const double dx, const double length, double * restrict u) {
-
-  double y = dx;
+  #pragma omp parallel for collapse(2)
   for (int j = 0; j < n; ++j) {
-    double x = dx; // Physical x position
     for (int i = 0; i < n; ++i) {
+      double y = dx*(j+1);
+      double x = dx*(i+1); // Physical x position
       u[i+j*n] = sin(PI * x / length) * sin(PI * y / length);
-      x += dx;
     }
-    y += dx; // Physical y position
   }
-
 }
-
 
 // Zero the array u
 void zero(const int n, double * restrict u) {
-
+  #pragma omp parallel for collapse(2)
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < n; ++j) {
       u[i+j*n] = 0.0;
     }
   }
-
 }
 
 
