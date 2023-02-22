@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     printf("\rstarting iteration %d", iters);
     iters++;
 
-    #pragma omp target teams distribute parallel for simd
+    #pragma omp target teams distribute parallel for simd schedule(simd: dynamic, 1)
     for (int i = 0; i < Ndim; i++) {
       xnew[i] = (TYPE)0.0;
       for (int j = 0; j < Ndim; j++) {
