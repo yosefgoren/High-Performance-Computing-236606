@@ -5,12 +5,14 @@
 // and some key constants used in this program
 //(such as TYPE)
 
-#define TOLERANCE 0.001
+#define TOLERANCE 0.1
+// #define DEF_SIZE 3000
 #define DEF_SIZE 3000
 #define MAX_ITERS 100000
+// #define MAX_ITERS 100
 #define LARGE 1000000.0
 
-//#define DEBUG    1     // output a small subset of intermediate values
+// #define DEBUG    1     // output a small subset of intermediate values
 //#define VERBOSE  1
 
 int main(int argc, char **argv) {
@@ -61,14 +63,16 @@ int main(int argc, char **argv) {
   //
   TYPE conv = LARGE;
   iters = 0;
+  #pragma omp target enter data map(to:xold[0:Ndim],xnew[0:Ndim],A[0:Ndim*Ndim],b[0:Ndim])
   while ((conv > TOLERANCE) && (iters < MAX_ITERS)) {
+    printf("\rstarting iteration %d", iters);
     iters++;
 
+    #pragma omp target teams distribute parallel for simd
     for (int i = 0; i < Ndim; i++) {
       xnew[i] = (TYPE)0.0;
       for (int j = 0; j < Ndim; j++) {
-        if (i != j)
-          xnew[i] += A[i * Ndim + j] * xold[j];
+        xnew[i] += A[i * Ndim + j] * xold[j] * (TYPE)(i != j);
       }
       xnew[i] = (b[i] - xnew[i]) / A[i * Ndim + i];
     }
@@ -76,6 +80,8 @@ int main(int argc, char **argv) {
     // test convergence
     //
     conv = 0.0;
+    #pragma omp target map(tofrom: conv)
+    #pragma omp teams distribute parallel for simd reduction(+: conv)
     for (int i = 0; i < Ndim; i++) {
       TYPE tmp = xnew[i] - xold[i];
       conv += tmp * tmp;
@@ -89,7 +95,9 @@ int main(int argc, char **argv) {
     xold = xnew;
     xnew = tmp;
   }
+  #pragma omp target exit data map(from : xold[0 : Ndim], xnew[0 : Ndim])
   elapsed_time = omp_get_wtime() - start_time;
+  printf("\n");
   printf(" Convergence = %g with %d iterations and %f seconds\n", (float)conv,
          iters, (float)elapsed_time);
 
@@ -106,10 +114,10 @@ int main(int argc, char **argv) {
     for (int j = 0; j < Ndim; j++)
       xold[i] += A[i * Ndim + j] * xnew[j];
     TYPE tmp = xold[i] - b[i];
-#ifdef DEBUG
-    printf(" i=%d, diff = %f,  computed b = %f, input b= %f \n", i, (float)tmp,
-           (float)xold[i], (float)b[i]);
-#endif
+// #ifdef DEBUG
+//     printf(" i=%d, diff = %f,  computed b = %f, input b= %f \n", i, (float)tmp,
+//            (float)xold[i], (float)b[i]);
+// #endif
     chksum += xnew[i];
     err += tmp * tmp;
   }

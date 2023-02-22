@@ -5,9 +5,11 @@
 // and some key constants used in this program
 //(such as TYPE)
 
-#define TOLERANCE 0.1
+#define TOLERANCE 0.01
+// #define DEF_SIZE 3000
 #define DEF_SIZE 3000
 #define MAX_ITERS 100000
+// #define MAX_ITERS 100
 #define LARGE 1000000.0
 
 // #define DEBUG    1     // output a small subset of intermediate values
@@ -62,13 +64,14 @@ int main(int argc, char **argv) {
   TYPE conv = LARGE;
   iters = 0;
   while ((conv > TOLERANCE) && (iters < MAX_ITERS)) {
+    printf("\rstarting iteration %d", iters);
     iters++;
 
+    #pragma omp parallel for 
     for (int i = 0; i < Ndim; i++) {
       xnew[i] = (TYPE)0.0;
       for (int j = 0; j < Ndim; j++) {
-        if (i != j)
-          xnew[i] += A[i * Ndim + j] * xold[j];
+        xnew[i] += A[i * Ndim + j] * xold[j] * (TYPE)(i != j);
       }
       xnew[i] = (b[i] - xnew[i]) / A[i * Ndim + i];
     }
@@ -76,11 +79,20 @@ int main(int argc, char **argv) {
     // test convergence
     //
     conv = 0.0;
+    #pragma omp parallel for reduction(+:conv)
     for (int i = 0; i < Ndim; i++) {
       TYPE tmp = xnew[i] - xold[i];
       conv += tmp * tmp;
     }
     conv = sqrt((double)conv);
+    
+    // conv = 0.0;
+    // #pragma omp target data map(from: xnew[0:Ndim], xold[0:Ndim]) 
+    // for (int i = 0; i < Ndim; i++) {
+    //   TYPE tmp = xnew[i] - xold[i];
+    //   conv += tmp * tmp;
+    // }
+    // conv = sqrt((double)conv);
 #ifdef DEBUG
     printf(" conv = %f \n", (float)conv);
 #endif
@@ -90,6 +102,7 @@ int main(int argc, char **argv) {
     xnew = tmp;
   }
   elapsed_time = omp_get_wtime() - start_time;
+  printf("\n");
   printf(" Convergence = %g with %d iterations and %f seconds\n", (float)conv,
          iters, (float)elapsed_time);
 
