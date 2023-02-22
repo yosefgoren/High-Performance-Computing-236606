@@ -5,3 +5,4 @@ workbench/
 .lh/
 .vscode/
 *.exe
+res_*
