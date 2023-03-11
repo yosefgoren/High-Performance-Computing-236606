@@ -1,0 +1,6 @@
+[submodule "ScalSALE"]
+	path = ScalSALE
+	url = .\\ScalSALE\\
+[submodule "json-fortran"]
+	path = json-fortran
+	url = .\\json-fortran\\
