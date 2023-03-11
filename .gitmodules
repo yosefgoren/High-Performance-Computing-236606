@@ -1,0 +1,6 @@
+[submodule "json-fortran"]
+	path = json-fortran
+	url = https://github.com/jacobwilliams/json-fortran.git
+[submodule "ScalSALE"]
+	path = ScalSALE
+	url = https://github.com/Scientific-Computing-Lab-NRCN/ScalSALE.git
