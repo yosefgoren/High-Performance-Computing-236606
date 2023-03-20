@@ -6,3 +6,9 @@ workbench/
 .vscode/
 *.exe
 res_*
+*.log
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.out

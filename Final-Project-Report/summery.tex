@@ -1,0 +1,17 @@
+\subsection*{Introduction}
+In this project, we take the 3D Sedov-Taylor simulation, specifically the
+one found in the ScalSALE\cite{scalsale} paper implementation.\\
+We start off from the original code written in Fortran 90, 
+and go through a series of steps towrads optimizing the run on our specific
+hardware to get the shortest possible run time.\\
+While the first part will be run fully on the CPU and the runtimes will be measured,
+the second part will be only theoretical - examining what should potentially
+be the best parts of the code to offload to a GPU, considering workloads,
+transfer times e.t.c.\\
+The project with the source for
+it's final CPU implementation can be found at the github \cite{this_repo}.
+
+\subsection*{Tools}
+For the purposes of CPU parallalization - \emph{openMP} was used.
+Additionally, \emph{Intel VTune} was used to profile the code and
+find the most time consuming loops.

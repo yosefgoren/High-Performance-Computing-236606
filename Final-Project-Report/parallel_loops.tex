@@ -1,0 +1,70 @@
+\subsection*{Objective}
+The objective of this part is find the parts of the code
+that repeat the most and see if and how they can be run in parallel,
+which will hopefully lead to a good speedup with a simple few directives.
+
+\subsection*{Parallelization}
+In order to quickly identify parallelization
+candidates in the code, Vtune was run
+on 'Hotspots' mode.
+It highlighted 6 procedures which together
+summed to 70\% of the CPU time
+- the first of which being called 'calculate\_derivatives' and
+being run during 37\% of the CPU time.\\
+
+Observing the 'calculate\_derivatives' we can see
+it mostly consists of 3 nested loops:
+Within each nested iteration, a stencil at some
+$(i,j,k)$ within the positions tensor is gathered,
+followed by gathering the same stencil from 
+the velocities tensor.\\
+This is then followed by a calculation 
+which strictly depends on these stencils with the 
+addition of the volume of the cell calculate elsewere.
+This calculate is intensive in float multiplication operations.\\
+
+Inserting a simple parallel directive on the nested
+loop was able to achive the runtime of 1.891 seconds.
+This puts the global speedup at $\times 1.29$,
+assuming the runtime for the rest of the code remains
+static - we have a speedup of $\times 3.42$ 
+for the 'calculate\_derivatives' procedure
+\footnote{
+    This was calculated as $(2.44-0.63*2.44)/(1.801-0.63*2.44)$
+    since $0.63*2.44$ is assumed to be the runtime of the rest of
+    the code.
+}.
+Setting the scheduling to guided was able to get
+marginally better results at a cycle time of 1.841 seconds.
+
+Moving on to the next most time consuming procedure,
+we have a procedure named 'calculate\_vertex\_mass\_3d'
+taking 13\% of the pre-parallelization CPU time. It also
+consists of the same nested loop structure.
+Adding the same parallel directive as before
+resulted in a runtime of 1.452 seconds per cycle.\\
+
+Going forward with the next procedure named 'Calculate' in the
+'volume' module - We get to 1.297 seconds per cycle.
+
+\subsection*{Scheduling}
+Vtune analysis in 'Threading' mode shows
+how significat is the barrier time is as 
+compared with the actual workloads in the parallel sections.
+Considering that the workloads are completely
+static (can be known before the iterations begin) -
+one might expect the static scheduling
+to perform the best, but this is far from the case.\\
+
+A closer analysis shows how short the workload is - 
+which would make is sensitive to noise preemption by the OS:
+if one of the threads is preempted -
+all other threads must wait for it to continue.\\
+The fact that the system is NUMA might also play a
+role in exacerbating the phenomenon as scheduling a thread
+to varying NUMA nodes could be costly.\\
+Perhaps it is not surprising that experimentation shows
+the best scheduling to be 'guided':
+it's low overhead complements the short workload,
+and it's dynamic nature enables it to adapt to 
+the specific run.

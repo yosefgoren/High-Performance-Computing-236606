@@ -1,0 +1,67 @@
+\subsection*{Objective}
+The objective of this part is to make the most out of
+the standard compiler technologies and achive a good serial CPU performance.
+To achive this task, different compilers with different optimization options
+were considered and trailed.
+
+\subsection*{Compilers}
+Mutiple Fortran compilers have been trailed throught
+the development. Namely: 'GNU gfortran (7.4.0)', 'Intel ifort (2021.8.0)' and 'Intel ifx (2023.0.0)'.\\
+In the table, the average runtime of a single simulation cycle is shown as a function of the compiler
+and the optimization level - The test is done on the original code.
+The calculation excludes the first cycle, since it often has
+a longer runtime - likely due to 'cold' caches.\\
+This runtime for only one cycle should be negligable
+when many cycles are run.
+\begin{center}
+\begin{tabular}{| c |  c  c  c |}
+    \hline
+                 & ifort    & ifx       & gfortran\\
+    \hline
+    O0 (none)    & 15.02    & 11.76     & 12.4 \\ 
+    O2 (default) & 5.08     & 4.93     & 12.41 \\  
+    Ofast        & 4.73     & 4.92      & 12.41    \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+Running all three compilers shows that 'Intel ifort' is the fastest,
+while being marginally better than 'Intel ifx' and significantly better than 'GNU gfortran'.\\
+For the rest of the project, 'Intel ifort' will be used.
+
+\subsection*{Flag Optimizations}
+After selecting the 'ifort' compiler with the 'Ofast' optimization level,
+a few specific flags were trailed. So before any of these took effect
+the runtime was 4.73 seconds.\\
+\begin{itemize}
+    \item The '-ipo' flag:\\
+    This flag enables interprocedural optimization between
+    procedures defined in different files. This might be useful here since the main simulation
+    loop takes place in many different sources.\\
+    The result was a runtime of 3.39 seconds - equivalent to a $\times 1.39$ speedup.
+    
+    \item The '-xHost' flag:\\
+    This flag requests the compiler to generate code which
+    is best optimized for the current host machine.\\
+    It enables the compiler to take into account the specific
+    hardware which is available.
+    The resulting runtime was 3.8 seconds - equivalent to a $\times 1.24$ speedup.\\
+    
+    \item The '-g' flag (check removed):\\
+    The '-g' adds debug information and other compilation changes to make the output easier to debug, 
+    removing it did not make any noticable difference (but did make a difference when an explicit
+    optimization level flag is not provided. In this case it changes the default optimization level from '-O2' to '-O0').
+\end{itemize}
+When combining the '-ipo' and '-xHost' flags,
+the we get a runtime of 2.44 seconds - equivalent to a $\times 1.94$ speedup.\\
+
+By examining a run of this version with Vtune 'HPC' mode,
+we can see that the 'calculate\_derivatives' procedure
+has seen vectorization
+\footnote{
+    In the procedue a small conditional branch was meant to
+    decrease the workload by ignoring cells with negligable volume,
+    however, this branch prevented vectorization - and was removed.
+}
+- likely due to the '-xHost' flag.\\
