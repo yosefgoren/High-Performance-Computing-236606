@@ -1,0 +1,78 @@
+\subsection*{Objective}
+In this subsection - we examine our program and examine
+what are the parts of it which are most suitable for offloading to a GPU,
+which would hopefully be able to yield a speedup.
+
+\subsection*{First Look}
+Upon inspection,
+we can see the program is built around a 'main loop'
+with strong circular dependency between it's iterations.\\
+Ultimately - we would find a slice of the data
+which would be transfered to the GPU and processed there exclusively.
+As stated, this solution would require any data
+which interacts with our slice to be transfered as well.\\
+
+The problem with this approach is that we quickly find that
+this mehodology requires doing the whole calculation on the GPU,
+which would indeed provide a great speedup,
+but realistically - the complex and branched nature
+of the implementation makes it infeasible; at-least
+for the scope of this project.\\
+
+The other extreme oppisite approach would 
+find the biggest 'simd'ish loops within the code,
+and offload them, while updating their data from and to the CPU
+with each iteration of the main loop.\\
+The problem with the approach is the immense overhead
+of the data transfer; while it's hard to know without
+running the code - it's likely that
+this overhead will negate any speedup.\\
+
+A more realistic approach would be to find a slice of
+the calculation which is significat enough to yield
+a speedup, while also have relativly little dependencies
+to on data which is processed on the CPU;
+to put it simply - we are interested in the
+parts of the program with the highest proportion
+between calculations and data dependencies.\\
+
+\subsection*{Fundemental Memory Bound}
+Armed with our huristic - we go back to the code and attempt
+to find such a cross-section of the program.
+But upon further inspection we find that the program
+is structured in a way which makes the data dependencies
+very large and somewhat uniform:\\
+The data of the program is mostly structrued
+in a set of 3D tensors which represent physical quantities,
+and the program consists of a series of cell-wise calculations:
+each taking in some of the tensors as input, 
+and producing some of the tensors as output.\\
+
+This circle of tensor-wide dependencies is very bad news for our huristic -
+since taking any subset of these calculations (which is not the full circle)
+requires transfering data on the scale of the tensors to and from the GPU.\\
+
+\subsection*{Our Solution}
+With the understanding of the fundemental limitations 
+which the structure of the program imposes,
+we can need to ask 'what is the best we can get under these circumstances?'.\\
+Well - we can still attempt to approach our huristic
+from the other side - by searching for the calculations 
+which have the highest amount of operations per cell,
+we might be able to find a slice of the program
+with a good proportion between calculations and data dependencies.\\
+If any viable offload is exists - it would be in this slice.\\
+
+Indeed we know a portion of the calculation that conforms with this idea;
+consider 'calculate\_derivatives' procedure - which as we saw before -
+consists of more than a third of the serial CPU time - while not being more memory
+intensive than the other cell-wise calculations.\\
+Our offloading solution consists of putting the input and
+output dependencies of 'calculate\_derivatives' on the GPU,
+executing it on the GPU, while also updating it's inputs to the GPU and
+its outputs from the GPU at each iteration of the main loop.\\
+
+Additional offloading ideas (not included from our implementation) 
+are to chain more of the cell-wise calculations together,
+which could keep the data transfers the same, while increasing the
+amount of calculations done on the GPU.\\

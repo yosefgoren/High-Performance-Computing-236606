@@ -1,3 +1,8 @@
+\subsection*{Administrative}
+The project with the source for it's final CPU and GPU implementations can be found at the github \cite{this_repo}
+repository. The CPU implementation is found in the 'yosef-parallel-impl' branch,
+while the GPU implementation can be found at the 'yosef-offloading' branch.
+
 \subsection*{Introduction}
 In this project, we take the 3D Sedov-Taylor simulation, specifically the
 one found in the ScalSALE\cite{scalsale} paper implementation.\\
@@ -8,8 +13,6 @@ While the first part will be run fully on the CPU and the runtimes will be measu
 the second part will be only theoretical - examining what should potentially
 be the best parts of the code to offload to a GPU, considering workloads,
 transfer times e.t.c.\\
-The project with the source for
-it's final CPU implementation can be found at the github \cite{this_repo}.
 
 \subsection*{Tools}
 For the purposes of CPU parallalization - \emph{openMP} was used.
