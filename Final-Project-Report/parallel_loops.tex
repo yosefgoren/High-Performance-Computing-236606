@@ -68,3 +68,23 @@ the best scheduling to be 'guided':
 it's low overhead complements the short workload,
 and it's dynamic nature enables it to adapt to 
 the specific run.
+
+\subsection*{Results}
+To summerize the results a table of speedups is presented below.
+The baseline is taken as the non-optimized program, compiles with 'ifort'.
+\begin{center}
+\begin{tabular}{| c | c | c |}
+    \hline
+        & cycle time (sec) & speedup \\
+    \hline
+    No Optimization & 15.02 & 1 \\
+    Standard Optimization & 5.08 & 2.96 \\
+    Aggerssive Optimization & 4.73 & 3.17 \\
+    Aggerssive+IPO & 3.39 & 4.43 \\
+    Aggerssive+IPO+Host Specific & 2.44 & 6.15 \\
+    \hline
+    All Opt+Easy Parallelization & 1.841 & 8.16 \\
+    All Opt+Full Parallelization & 1.297 & 11.58 \\
+    \hline
+\end{tabular}
+\end{center}

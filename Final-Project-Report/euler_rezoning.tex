@@ -1,0 +1,27 @@
+Continuing the code from the CPU Optimization
+part, we run our simulation on with Euler Rezoning
+and get a runtime of 3.79 seconds per cycle.\\
+
+Vtune analysis on 'HPC' mode shows
+a function named 'calculate\_advect\_3d' 
+as the biggest sequential bottleneck in the code - 
+taking up 46.2\% of the serial runtime.\\
+
+The procedure consists of a few nested loops.
+Starting by parallelizing the largest one is simple
+enough by adding the appropriate directives and identifying the private variables.\\
+A noteworthy addition to this is a few places
+where the procedure accesses
+tensors in neighboring cells, requires use the secure this access
+\footnote{i.e. writes to 'vof\_adv','mat\_vof\_adv','mat\_cell\_mass\_adv','sie\_vof\_adv'
+and 'init\_mat\_layers\_adv'}
+.
+This has been done using the 'atomic' directive,
+and similarly with the 
+tensor.
+
+Parallelizing this this loop gets us to
+a runtime of 1.901 seconds per cycle.
+This putting us at a speedup of $\times 1.993$
+(and even more considering 'Calculate\_vertex\_mass\_3d'
+was already parallelized from the original CPU Optimizations part).\\
